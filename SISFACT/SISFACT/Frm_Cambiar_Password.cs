@@ -16,5 +16,12 @@ namespace SISFACT
         {
             InitializeComponent();
         }
+
+        private void btCancelar_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
+            Frm_Login FrmLogin = new Frm_Login();
+            FrmLogin.Show();
+        }
     }
 }

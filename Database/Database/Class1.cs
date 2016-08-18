@@ -665,6 +665,33 @@ namespace Databases
             Desconectar();
         }
 
+      /*--------------------------------------------------------
+      * Metodo: PrimerAcceso_Sistema
+      * Proposito: Obtener los parametros de un procedimiento o funcion
+      *            creados en la based de datos.
+      * --------------------------------------------------------
+      */
+        public bool PrimerAcceso_Sistema(string usuario)
+        {
+            //Se asignan los valores
+            vl_campos = "primer_acceso";
+            vl_tabla = "seg.USUARIOS";
+            vl_filtro = "usuario = '" + usuario + "'";
+            //Se obtiene el resultado
+            ResultadoGlobal = ConsultaSimple();
+            //Se valida el resultado del query
+            if (ResultadoGlobal == true)
+            {
+                //Se valida el resultado
+                if (vl_resultado == "Y")
+                { ResultadoGlobal = true; }
+                else
+                { ResultadoGlobal = false; }
+            }
+            return ResultadoGlobal;
+            Desconectar();
+        }
+
         //Se obtiene el valor de la propiedad SQLMessages
         public string getSQLMessages
         { get { return SQLMessages; } }
