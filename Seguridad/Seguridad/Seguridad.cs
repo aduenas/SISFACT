@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.IO;
 
@@ -11,8 +8,8 @@ namespace Seguridad
     public class Seguridad
     {
         //Atributos
-        private TripleDESCryptoServiceProvider TripleDes;
-        private bool invalid = false;
+        TripleDESCryptoServiceProvider TripleDes = new TripleDESCryptoServiceProvider();
+        //private bool invalid = false;
 
         //Constructor
         private Seguridad(string key)
