@@ -15,6 +15,10 @@ namespace Databases
         private List<string> ListaParametros;
         private List<string> ListaValores;
         private string vl_procedimiento;
+        //Se asignan los valores
+        private static string UsuarioApp;
+        private int Invalid_Pwd_Acumulador = 0;
+        private int Invalid_Pwd_Count;
 
         //Propiedades de Construccion del SQL Statement
         private string vl_campos;
@@ -665,12 +669,59 @@ namespace Databases
             Desconectar();
         }
 
-      /*--------------------------------------------------------
+        /*--------------------------------------------------------
       * Metodo: PrimerAcceso_Sistema
       * Proposito: Obtener los parametros de un procedimiento o funcion
       *            creados en la based de datos.
       * --------------------------------------------------------
       */
+        public bool ValidarPassword(string usuario, string password)
+        {
+            Invalid_Pwd_Count = Password_Incorrecto_Contador();
+
+            //Se valida el contador en la BD
+            if (Invalid_Pwd_Count < 3)
+            {
+                vl_campos = "password";
+                vl_tabla = "seg.USUARIOS";
+                vl_filtro = "usuario = '" + usuario + "'";
+                //Se obtiene el resultado
+                ResultadoGlobal = ConsultaSimple();
+                //Se valida el resultado del query
+                if (ResultadoGlobal == true)
+                {
+                    //Se Encripta el password
+                    Seguridad.SISFACTSeguridad.setFrase = vl_segfrase;
+                    string vlpassword = Seguridad.SISFACTSeguridad.Encriptar(password, true);
+                    //Se valida el resultado
+                    if (vl_resultado == vlpassword)
+                    { ResultadoGlobal = true; }
+                    else
+                    {
+                        Invalid_Pwd_Acumulador = Invalid_Pwd_Count + 1;
+                        bool Resultado = Actualizar_Contador_PwdInvalido();
+                        ResultadoGlobal = false;
+                    }
+                }
+            }
+            else
+            {
+                //Se Bloquea al Usuario en la Base de Datos
+                vl_Estado_Usuario = "B";
+                Bloquear_Usuario();
+
+            }
+            
+            return ResultadoGlobal;
+            Desconectar();
+        }
+
+        /*--------------------------------------------------------
+        * Metodo: PrimerAcceso_Sistema
+        * Proposito: Obtener los parametros de un procedimiento o funcion
+        *            creados en la based de datos.
+        * --------------------------------------------------------
+        */
         public bool PrimerAcceso_Sistema(string usuario)
         {
             //Se asignan los valores
@@ -692,6 +743,80 @@ namespace Databases
             Desconectar();
         }
 
+        /*--------------------------------------------------------
+        * Metodo: Password_Incorrecto_Contador
+        * Proposito: Obtener los parametros de un procedimiento o funcion
+        *            creados en la based de datos.
+        * --------------------------------------------------------
+        */
+        private int Password_Incorrecto_Contador()
+        {
+            //Se asignan los valores
+            vl_campos = "invalid_password_count";
+            vl_tabla = "seg.USUARIOS";
+            vl_filtro = "usuario = '" + UsuarioApp + "'";
+            //Se obtiene el resultado
+            ResultadoGlobal = ConsultaSimple();
+            return Convert.ToInt16(vl_resultado);
+            Desconectar();
+        }
+
+        /*--------------------------------------------------------
+       * Metodo: Actualizar_Contador_PwdInvalido
+       * Proposito: Obtener los parametros de un procedimiento o funcion
+       *            creados en la based de datos.
+       * --------------------------------------------------------
+       */
+        private bool Actualizar_Contador_PwdInvalido()
+        {
+            //Se valida el valor del contador
+            if (Invalid_Pwd_Acumulador != 0)
+            {
+                //Se asignan los valores
+                vl_usar_filtro = "SI";
+                vl_campos = "invalid_password_count = " + Convert.ToString(Invalid_Pwd_Acumulador);
+                vl_tabla = "seg.USUARIOS";
+                vl_filtro = "usuario = '" + UsuarioApp + "'";
+                ResultadoGlobal = sqlActualizar();
+            }
+            else
+            {
+                //Se asignan los valores
+                vl_usar_filtro = "SI";
+                vl_campos = "invalid_password_count = " + Convert.ToString(Invalid_Pwd_Acumulador + 1);
+                vl_tabla = "seg.USUARIOS";
+                vl_filtro = "usuario = '" + UsuarioApp + "'";
+                ResultadoGlobal = sqlActualizar();
+            }
+            //Se valida el resultado del query
+            if (ResultadoGlobal == true)
+            {
+                //Se valida el resultado
+                if (vl_resultado == "Y")
+                { ResultadoGlobal = true; }
+                else
+                { ResultadoGlobal = false; }
+            }
+            return ResultadoGlobal;
+            Desconectar();
+        }
+
+        /*--------------------------------------------------------
+      * Metodo: Actualizar_Contador_PwdInvalido
+      * Proposito: Obtener los parametros de un procedimiento o funcion
+      *            creados en la based de datos.
+      * --------------------------------------------------------
+      */
+        private void Bloquear_Usuario()
+        {
+            //Se asignan los valores
+            vl_usar_filtro = "SI";
+            vl_campos = "activo = 'B'";
+            vl_tabla = "seg.USUARIOS";
+            vl_filtro = "usuario = '" + UsuarioApp + "'";
+            ResultadoGlobal = sqlActualizar();
+            Desconectar();
+        }
         //Se obtiene el valor de la propiedad SQLMessages
         public string getSQLMessages
         { get { return SQLMessages; } }
@@ -707,6 +832,10 @@ namespace Databases
         //Se obtiene el estado de la conexion
         public bool getEstadoConexion
         { get { return vl_estado_conexion; } }
+
+        //Se obtiene el estado de la conexion
+        public int getInvalidPasswordCount
+        { get { return Invalid_Pwd_Count; } }
 
         //Propiedad de Solo Escritura
         public string setCamposTabla
@@ -731,6 +860,10 @@ namespace Databases
         //Propiedad de Solo Escritura
         public string setValores_Procedimiento
         { set { vl_procedimiento = value; } }
+
+        //Propiedad de Solo Escritura
+        public string setUsuarioApp
+        { set { UsuarioApp = value; } }
     }
 
     //Clase para Conectar con Oracle Database
