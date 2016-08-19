@@ -1,11 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Databases;
 
@@ -35,6 +28,7 @@ namespace SISFACT
         {
             //Se instancia la DLL Database
             SqlServer Conexion = new SqlServer();
+
             //Se valida si la conexion se establecio satisfactoriamente
             if (Conexion.Conectar() == "Conexion Establecida")
             {
@@ -65,7 +59,8 @@ namespace SISFACT
                     else
                     {
                         //Se valida que el password sea correcto
-                        
+
+
                         ////Se valida si es Primer Acceso al Sistema
                         //Resultado = Conexion.PrimerAcceso_Sistema(txtUsuario.Text);
                         //if (Resultado == true)
@@ -75,7 +70,8 @@ namespace SISFACT
                         //    Frm_Cambiar_Password FrmCambiarPasswd = new Frm_Cambiar_Password();
                         //    FrmCambiarPasswd.Show();
                         //}
-                        
+                        string Texto = Seguridad.Seguridad.Encriptar(txtUsuario.Text,true);
+                        MessageBox.Show("Encriptado: --> " + Texto,"Encriptado",MessageBoxButtons.OK);
 
                     }
                 }

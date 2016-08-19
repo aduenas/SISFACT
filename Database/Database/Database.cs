@@ -10,7 +10,7 @@ namespace Databases
         //atributos
         private const string vl_usuario = "SegAdmin";
         private const string vl_passwd = "$3Fin2010";
-        private const string vl_segfrase = "/.&G@nicu$2016#3cl3$iasT3$2020>.<^";
+        private const string vl_segfrase = "/.&G@nicu$2016#3cl3$iast3$";
         private bool vl_estado_conexion = false;
         private List<string> ListaParametros;
         private List<string> ListaValores;

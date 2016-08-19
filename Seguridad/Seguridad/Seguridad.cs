@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text;
 using System.Security.Cryptography;
-using System.IO;
 
 namespace Seguridad
 {
@@ -9,61 +8,37 @@ namespace Seguridad
     {
         //Atributos
         TripleDESCryptoServiceProvider TripleDes = new TripleDESCryptoServiceProvider();
-        //private bool invalid = false;
+        private const string Semilla = "./-[3cl3$iast3$|]!./";
+        private const string TipoHash = "SHA1";
+        private const int Iteraciones = 2;
+        private const string Vector = "3$P@rt@Cu$[;'.+2635./";
+        private const int KeySize = 192;
 
-        //Constructor
-        private Seguridad(string key)
+        public static string Encriptar(string toEncrypt, bool useHashing)
         {
-            TripleDes.Key = TruncateHash(key, TripleDes.KeySize);
-            TripleDes.IV = TruncateHash("", TripleDes.BlockSize);
+            byte[] keyArray;
+            byte[] toEncryptArray = UTF8Encoding.UTF8.GetBytes(toEncrypt);
 
+            if (useHashing)
+            {
+                MD5CryptoServiceProvider hashmd5 = new MD5CryptoServiceProvider();
+                keyArray = hashmd5.ComputeHash(UTF8Encoding.UTF8.GetBytes(Vector));
+                hashmd5.Clear();
+            }
+            else
+                keyArray = UTF8Encoding.UTF8.GetBytes(Vector);
+
+            TripleDESCryptoServiceProvider tdes = new TripleDESCryptoServiceProvider();
+            tdes.Key = keyArray;
+            tdes.Mode = CipherMode.ECB;
+            tdes.Padding = PaddingMode.PKCS7;
+
+            ICryptoTransform cTransform = tdes.CreateEncryptor();
+            byte[] resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+            tdes.Clear();
+            return Convert.ToBase64String(resultArray, 0, resultArray.Length);
         }
 
-        //Metodo TruncateHash
-        private byte[] TruncateHash(string key, Int32 length)
-        {
-            SHA1 sha1 = new SHA1CryptoServiceProvider();
-            byte[] KeyBytes;
-            byte[] Hash;
 
-            KeyBytes = Encoding.Unicode.GetBytes(key);
-            Hash = sha1.ComputeHash(KeyBytes);
-
-            Array.Resize(ref Hash, -1);
-            return Hash;
-        }
-        //Metodo para Encriptar Datos
-        public string Encriptar_Datos(string Texto)
-        {
-            //Se convierte el texto plano a un arreglo de bytes
-            byte[] TextoBytes;
-            TextoBytes = Encoding.Unicode.GetBytes(Texto);
-
-            //Se crea un string en memoria
-            MemoryStream ms = new MemoryStream();
-            //Se crea el encoder para escribir en memoria
-            CryptoStream EncodeString = new CryptoStream(ms, TripleDes.CreateEncryptor(), CryptoStreamMode.Write);
-            //Uso de CryptoStream para escribir en el arreglo de bytes
-            EncodeString.Write(TextoBytes, 0, TextoBytes.Length);
-            EncodeString.FlushFinalBlock();
-            //Se convierte el Stream a Texto Legible
-            return ms.ToString();
-        }
-
-        //Metodo para Desencriptar los Datos
-        public string Desencriptar_Datos(string Texto)
-        {
-            //Se convierte el texto encriptado a un arreglo de bytes
-            byte[] TextoEncriptado = Convert.FromBase64String(Texto);
-            //Se crea el stream
-            MemoryStream ms = new MemoryStream();
-            //Se crea el decoder para escribir el stream
-            CryptoStream DecodeString = new CryptoStream(ms, TripleDes.CreateDecryptor(), CryptoStreamMode.Write);
-            //Uso de CryptoStream para escribir en el arreglo
-            DecodeString.Write(TextoEncriptado, 0, TextoEncriptado.Length);
-            DecodeString.FlushFinalBlock();
-            //Se convierte el stream a Texto Legible
-            return ms.ToString();
-        }
     }
 }
